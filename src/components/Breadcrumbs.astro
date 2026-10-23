@@ -1,0 +1,21 @@
+---
+import { url, absoluteUrl } from '../lib/utils';
+interface Props { items: { name: string; href?: string }[] }
+const items = [{ name: 'होम', href: '/' }, ...Astro.props.items];
+const ld = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items.map((it, i) => ({ '@type': 'ListItem', position: i + 1, name: it.name, ...(it.href ? { item: absoluteUrl(it.href, Astro.site) } : {}) })) };
+---
+<nav class="crumbs" aria-label="ब्रेडक्रम्ब">
+  <ol>
+    {items.map((it, i) => (
+      <li>{it.href && i < items.length - 1 ? <a href={url(it.href)}>{it.name}</a> : <span aria-current="page" class="clamp-2">{it.name}</span>}</li>
+    ))}
+  </ol>
+</nav>
+<script type="application/ld+json" set:html={JSON.stringify(ld)} />
+<style>
+  .crumbs { padding-top: 16px; font-size: .82rem; color: var(--muted); }
+  ol { list-style: none; display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; }
+  li { display: flex; align-items: center; gap: 4px; max-width: 100%; }
+  li + li::before { content: '›'; color: var(--muted); }
+  a { color: var(--text); font-weight: 500; } a:hover { text-decoration: underline; }
+</style>

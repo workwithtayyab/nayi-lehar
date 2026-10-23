@@ -1,0 +1,79 @@
+---
+import Base from '../../layouts/Base.astro';
+import { Image } from 'astro:assets';
+import { STORIES } from '../../data/media';
+import type { WebStory } from '../../data/types';
+import { getAuthor } from '../../data/authors';
+import { img } from '../../lib/images';
+import { formatShortDate, url } from '../../lib/utils';
+export function getStaticPaths() { return STORIES.map((s, i) => ({ params: { slug: s.slug }, props: { story: s, next: STORIES[(i + 1) % STORIES.length] } })); }
+const { story: s, next } = Astro.props as { story: WebStory; next: WebStory };
+const author = getAuthor(s.author);
+---
+<Base title={s.title} description={s.slides[0].text} image={img(s.cover)} bare>
+  <div class="player" data-story>
+    <div class="frame">
+      <div class="bars" aria-hidden="true">{s.slides.map(() => <span><i></i></span>)}</div>
+      <div class="top">
+        <a href={url('/web-story')} class="close" aria-label="वेब स्टोरी से बाहर जाएं">✕</a>
+        <p class="by">{author.name} · <time datetime={s.date}>{formatShortDate(s.date)}</time></p>
+        <button type="button" class="pause" data-pause aria-label="रोकें" aria-pressed="false">❚❚</button>
+      </div>
+      <h1 class="sr-only">{s.title}</h1>
+      <ol class="slides" aria-live="polite">
+        {s.slides.map((sl, i) => (
+          <li class="slide" hidden={i !== 0} aria-label={`स्लाइड ${i + 1} / ${s.slides.length}`}>
+            <Image src={img(sl.image)} alt={sl.alt} widths={[360, 540, 720]} sizes="(max-width: 480px) 100vw, 420px" loading={i === 0 ? 'eager' : 'lazy'} />
+            <div class="txt"><h2>{sl.heading}</h2><p>{sl.text}</p></div>
+          </li>
+        ))}
+        <li class="slide end" hidden aria-label="स्टोरी समाप्त">
+          <div class="txt center"><h2>स्टोरी खत्म!</h2><p>अगली स्टोरी: {next.title}</p>
+          <a class="btn btn-primary" href={url(`/web-story/${next.slug}`)}>अगली स्टोरी देखें</a>
+          <a class="btn btn-ghost" href={url('/')}>होम पर जाएं</a></div>
+        </li>
+      </ol>
+      <button type="button" class="tap prev" data-prev aria-label="पिछली स्लाइड"></button>
+      <button type="button" class="tap next" data-next aria-label="अगली स्लाइड"></button>
+    </div>
+  </div>
+</Base>
+<script>
+  const root = document.querySelector<HTMLElement>('[data-story]')!;
+  const slides = Array.from(root.querySelectorAll<HTMLElement>('.slide'));
+  const bars = Array.from(root.querySelectorAll<HTMLElement>('.bars i'));
+  const pauseBtn = root.querySelector<HTMLButtonElement>('[data-pause]')!;
+  const DUR = 6000; let i = 0, t0 = performance.now(), paused = matchMedia('(prefers-reduced-motion: reduce)').matches, elapsed = 0;
+  const show = (n: number) => { i = Math.max(0, Math.min(slides.length - 1, n)); slides.forEach((s, k) => (s.hidden = k !== i)); bars.forEach((b, k) => (b.style.transform = `scaleX(${k < i ? 1 : 0})`)); elapsed = 0; t0 = performance.now(); };
+  const setPaused = (p: boolean) => { paused = p; pauseBtn.setAttribute('aria-pressed', String(p)); pauseBtn.textContent = p ? '▶' : '❚❚'; pauseBtn.setAttribute('aria-label', p ? 'चलाएं' : 'रोकें'); if (!p) t0 = performance.now() - elapsed; };
+  setPaused(paused);
+  const tick = (now: number) => { if (!paused && i < bars.length) { elapsed = now - t0; const p = Math.min(1, elapsed / DUR); bars[i].style.transform = `scaleX(${p})`; if (p >= 1) show(i + 1); } requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+  root.querySelector('[data-next]')!.addEventListener('click', () => show(i + 1));
+  root.querySelector('[data-prev]')!.addEventListener('click', () => show(i - 1));
+  pauseBtn.addEventListener('click', () => setPaused(!paused));
+  document.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') show(i + 1); if (e.key === 'ArrowLeft') show(i - 1); if (e.key === ' ' && e.target === document.body) { e.preventDefault(); setPaused(!paused); } if (e.key === 'Escape') location.href = root.querySelector<HTMLAnchorElement>('.close')!.href; });
+  let x0 = 0; root.addEventListener('touchstart', (e) => (x0 = e.touches[0].clientX), { passive: true });
+  root.addEventListener('touchend', (e) => { const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) show(i + (dx < 0 ? 1 : -1)); });
+</script>
+<style>
+  .player { min-height: 100dvh; display: grid; place-items: center; background: #0b0b0e; }
+  .frame { position: relative; width: min(100vw, calc(100dvh * 9 / 16), 460px); aspect-ratio: 9 / 16; max-height: 100dvh; overflow: hidden; background: #000; color: #fff; }
+  @media (min-width: 500px) { .frame { border-radius: 16px; height: min(92dvh, 820px); width: auto; } }
+  .bars { position: absolute; z-index: 3; top: 10px; left: 10px; right: 10px; display: flex; gap: 4px; }
+  .bars span { flex: 1; height: 3px; background: rgb(255 255 255 / .35); border-radius: 2px; overflow: hidden; }
+  .bars i { display: block; height: 100%; background: #fff; transform: scaleX(0); transform-origin: left; }
+  .top { position: absolute; z-index: 4; top: 20px; left: 8px; right: 8px; display: flex; align-items: center; gap: 8px; }
+  .by { flex: 1; margin: 0; font-size: .82rem; text-shadow: 0 1px 3px #000; }
+  .close, .pause { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: rgb(0 0 0 / .35); border: 0; color: #fff; font-size: 1rem; }
+  .slides { list-style: none; margin: 0; padding: 0; height: 100%; }
+  .slide { position: absolute; inset: 0; }
+  .slide :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .txt { position: absolute; inset: auto 0 0 0; padding: 80px 20px 36px; background: linear-gradient(transparent, rgb(0 0 0 / .9) 45%); z-index: 2; }
+  .txt h2 { font-size: 1.5rem; } .txt p { font-size: 1rem; opacity: .95; }
+  .end { background: linear-gradient(160deg, #1b0f5c, #b0124a); }
+  .center { inset: 0; display: grid; align-content: center; justify-items: center; gap: 12px; text-align: center; background: none; z-index: 5; }
+  .tap { position: absolute; top: 80px; bottom: 0; width: 35%; z-index: 1; background: none; border: 0; }
+  .tap.prev { left: 0; } .tap.next { right: 0; width: 65%; }
+  .tap:focus-visible { outline-offset: -4px; }
+</style>

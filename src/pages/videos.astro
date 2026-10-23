@@ -1,0 +1,49 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { Image } from 'astro:assets';
+import { VIDEOS } from '../data/media';
+import { img } from '../lib/images';
+import { formatShortDate } from '../lib/utils';
+---
+<Base title="वीडियो" description="देखने लायक वीडियो — एनिमेशन, क्रिएटिविटी और ओपन-सोर्स फ़िल्ममेकिंग।">
+  <div class="wrap">
+    <Breadcrumbs items={[{ name: 'वीडियो' }]} />
+    <header class="page-head"><h1>वीडियो</h1><p>देखने लायक वीडियो — एनिमेशन, क्रिएटिविटी और ओपन-सोर्स फ़िल्ममेकिंग। वीडियो तभी लोड होता है जब आप प्ले दबाते हैं, ताकि पेज तेज़ रहे।</p></header>
+    <div class="grid grid-3">
+      {VIDEOS.map((v, i) => (
+        <article class="v" id={v.id}>
+          <div class="player" data-yt={v.youtubeId} data-title={v.title}>
+            <Image src={img(v.thumb)} alt="" widths={[360, 540, 720]} sizes="(max-width: 600px) 100vw, 400px" loading={i < 3 ? 'eager' : 'lazy'} />
+            <button type="button" class="play" aria-label={`वीडियो चलाएं: ${v.title}`}><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></button>
+            <span class="dur">{v.duration}</span>
+          </div>
+          <h2 class="clamp-2">{v.title}</h2>
+          <p class="d clamp-2">{v.description}</p>
+          <p class="meta"><time datetime={v.date}>{formatShortDate(v.date)}</time> · स्रोत: Blender Foundation (CC BY)</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</Base>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-yt]').forEach((p) => {
+    p.querySelector('button')!.addEventListener('click', () => {
+      const f = document.createElement('iframe');
+      f.src = `https://www.youtube-nocookie.com/embed/${p.dataset.yt}?autoplay=1&rel=0`;
+      f.title = p.dataset.title!;
+      f.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen';
+      f.allowFullscreen = true;
+      p.replaceChildren(f);
+      f.focus();
+    });
+  });
+</script>
+<style>
+  .player { position: relative; aspect-ratio: 16 / 9; border-radius: var(--radius); overflow: hidden; background: #000; }
+  .player :global(img), .player :global(iframe) { width: 100%; height: 100%; object-fit: cover; border: 0; }
+  .play { position: absolute; inset: 0; margin: auto; width: 68px; height: 68px; border-radius: 50%; border: 0; background: rgb(232 51 90 / .92); color: #fff; display: grid; place-items: center; transition: transform .2s; }
+  .play:hover { transform: scale(1.08); }
+  .dur { position: absolute; right: 8px; bottom: 8px; background: rgb(0 0 0 / .75); color: #fff; font-size: .75rem; padding: 2px 6px; border-radius: 4px; pointer-events: none; }
+  .v h2 { font-size: 1.1rem; margin: 12px 0 6px; } .d { color: var(--text-2); margin: 0 0 6px; }
+</style>

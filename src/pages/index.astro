@@ -1,16 +1,114 @@
 ---
----
+import Base from '../layouts/Base.astro';
+import HeroCarousel from '../components/HeroCarousel.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import SectionHead from '../components/SectionHead.astro';
+import StoryCard from '../components/StoryCard.astro';
+import { ARTICLES, byCategory, featured } from '../data/articles';
+import { STORIES, GALLERIES, VIDEOS } from '../data/media';
+import { CATEGORIES, SITE } from '../config/site';
+import { Image } from 'astro:assets';
+import { img } from '../lib/images';
+import { url } from '../lib/utils';
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+const hero = featured().slice(0, 6);
+const latest = ARTICLES.slice(0, 6);
+const layouts = ['dark', 'big', 'list', 'big', 'grid'] as const;
+const sections = CATEGORIES.map((c, i) => ({ cat: c, items: byCategory(c.slug).slice(0, 4), layout: layouts[i % layouts.length] })).filter((s) => s.items.length);
+---
+<Base>
+  <h1 class="sr-only">{SITE.name} — {SITE.tagline}</h1>
+  <div class="wrap">
+    <HeroCarousel items={hero} />
+    <section class="section latest" aria-labelledby="latest-h">
+      <SectionHead id="latest-h" title="ताज़ा खबरें" href="/latest" />
+      <div class="latest-grid">
+        {latest.map((a) => <ArticleCard article={a} variant="compact" />)}
+      </div>
+    </section>
+  </div>
+
+  {sections.map(({ cat, items, layout }, i) => (
+    <section class:list={['section', 'cat-sec', `l-${layout}`]} style={layout === 'dark' ? `--sec:${cat.color}` : undefined} aria-labelledby={`sec-${cat.slug}`}>
+      <div class="wrap">
+        <SectionHead id={`sec-${cat.slug}`} title={cat.name} href={`/${cat.slug}`} light={layout === 'dark'} />
+        {layout === 'big' ? (
+          <div class="big">
+            <ArticleCard article={items[0]} variant="overlay" headingLevel="h3" />
+            <div class="stack">{items.slice(1).map((a) => <ArticleCard article={a} variant="list" />)}</div>
+          </div>
+        ) : layout === 'list' ? (
+          <div class="grid grid-3">{items.map((a) => <ArticleCard article={a} variant="list" />)}</div>
+        ) : (
+          <div class="grid grid-4">{items.map((a) => <ArticleCard article={a} showExcerpt={layout === 'grid'} />)}</div>
+        )}
+      </div>
+      {i === 3 && null}
+    </section>
+  ))}
+
+  <section class="section stories" aria-labelledby="ws-h">
+    <div class="wrap">
+      <SectionHead id="ws-h" title="वेब स्टोरी" href="/web-story" light />
+      <div class="rail">{STORIES.map((s) => <StoryCard story={s} />)}</div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="pg-h">
+    <div class="wrap">
+      <SectionHead id="pg-h" title="फोटो गैलरी" href="/photo-gallery" />
+      <div class="grid grid-3">
+        {GALLERIES.map((g) => (
+          <article class="gal">
+            <a href={url(`/photo-gallery/${g.slug}`)}>
+              <div class="mosaic" aria-hidden="true">{g.photos.slice(0, 3).map((p) => <Image src={img(p.image)} alt="" widths={[240, 480]} sizes="(max-width: 600px) 50vw, 200px" loading="lazy" />)}</div>
+              <h3 class="clamp-2">{g.title}</h3>
+            </a>
+            <p class="meta">{g.photos.length} तस्वीरें</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section videos-sec" aria-labelledby="vd-h">
+    <div class="wrap">
+      <SectionHead id="vd-h" title="वीडियो" href="/videos" />
+      <div class="grid grid-3">
+        {VIDEOS.slice(0, 3).map((v) => (
+          <article class="vid">
+            <a href={url(`/videos#${v.id}`)}>
+              <span class="vthumb"><Image src={img(v.thumb)} alt="" widths={[320, 480, 720]} sizes="(max-width: 600px) 100vw, 400px" loading="lazy" /><span class="play" aria-hidden="true">▶</span><span class="dur">{v.duration}</span></span>
+              <h3 class="clamp-2">{v.title}</h3>
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .latest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 18px var(--gap); }
+  .cat-sec.l-dark { background: var(--sec); color: #fff; }
+  .cat-sec.l-dark :global(.title a:hover) { color: #ffd6de; }
+  .cat-sec.l-dark :global(.meta), .cat-sec.l-dark :global(.meta strong) { color: rgb(255 255 255 / .8); }
+  .cat-sec.l-dark :global(.chip) { background: rgb(255 255 255 / .92); color: #222; }
+  .cat-sec.l-list { background: var(--bg-soft); }
+  .big { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--gap); align-items: start; }
+  .stack { display: grid; gap: 20px; }
+  .stories { background: linear-gradient(135deg, #1b0f5c, #3a1270); }
+  .rail { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(170px, 1fr); gap: 16px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
+  .rail > :global(*) { scroll-snap-align: start; }
+  .gal a, .vid a { display: grid; gap: 10px; }
+  .gal h3, .vid h3 { font-size: 1.05rem; margin: 0; font-weight: 600; }
+  .gal a:hover h3, .vid a:hover h3 { color: var(--brand-2); }
+  .mosaic { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; aspect-ratio: 16 / 10; border-radius: var(--radius-sm); overflow: hidden; }
+  .mosaic :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .mosaic :global(img:first-child) { grid-row: span 2; }
+  .gal .meta { margin: 4px 0 0; }
+  .vthumb { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: var(--radius-sm); overflow: hidden; }
+  .vthumb :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .play { position: absolute; inset: 0; margin: auto; width: 56px; height: 56px; border-radius: 50%; background: rgb(0 0 0 / .65); color: #fff; display: grid; place-items: center; font-size: 1.2rem; }
+  .dur { position: absolute; right: 8px; bottom: 8px; background: rgb(0 0 0 / .75); color: #fff; font-size: .75rem; padding: 2px 6px; border-radius: 4px; }
+  @media (max-width: 860px) { .big { grid-template-columns: 1fr; } }
+</style>

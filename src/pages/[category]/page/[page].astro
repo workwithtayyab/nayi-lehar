@@ -1,0 +1,12 @@
+---
+import ListingPage from '../../../components/ListingPage.astro';
+import { CATEGORIES, type Category } from '../../../config/site';
+import { byCategory } from '../../../data/articles';
+import { pages } from '../../../lib/paginate';
+import type { Article } from '../../../data/types';
+export function getStaticPaths() {
+  return CATEGORIES.flatMap((c) => pages(byCategory(c.slug)).filter((p) => p.n > 1).map((p) => ({ params: { category: c.slug, page: String(p.n) }, props: { cat: c, p } })));
+}
+const { cat, p } = Astro.props as { cat: Category; p: { n: number; last: number; items: Article[] } };
+---
+<ListingPage title={cat.name} description={cat.description} items={p.items} current={p.n} last={p.last} base={`/${cat.slug}`} crumbs={[{ name: cat.name, href: `/${cat.slug}` }, { name: `पेज ${p.n}` }]} />

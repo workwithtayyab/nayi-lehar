@@ -1,0 +1,115 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { Image } from 'astro:assets';
+import { ARTICLES, related } from '../../data/articles';
+import type { Article } from '../../data/types';
+import { getCategory, SITE } from '../../config/site';
+import { getAuthor } from '../../data/authors';
+import { img } from '../../lib/images';
+import { absoluteUrl, formatDate, initials, renderBody, url } from '../../lib/utils';
+import { getImage } from 'astro:assets';
+
+export function getStaticPaths() {
+  return ARTICLES.map((a) => ({ params: { category: a.category, slug: a.slug }, props: { article: a } }));
+}
+const { article: a } = Astro.props as { article: Article };
+const cat = getCategory(a.category)!;
+const author = getAuthor(a.author);
+const hero = img(a.image);
+const pageUrl = absoluteUrl(a.href, Astro.site);
+const ldImg = await getImage({ src: hero, width: 1200, format: 'jpg' });
+const ld = {
+  '@context': 'https://schema.org', '@type': 'NewsArticle', headline: a.title, description: a.excerpt, inLanguage: 'hi-IN',
+  image: [new URL(ldImg.src, Astro.site).toString()], datePublished: a.date, dateModified: a.date, mainEntityOfPage: pageUrl,
+  articleSection: cat.nameEn, keywords: a.tags.join(', '),
+  author: { '@type': 'Person', name: author.nameEn, url: absoluteUrl(`/author/${author.slug}`, Astro.site) },
+  publisher: { '@type': 'Organization', name: SITE.name, logo: { '@type': 'ImageObject', url: absoluteUrl('/favicon.svg', Astro.site) } },
+};
+const enc = encodeURIComponent;
+const shares = [
+  { name: 'WhatsApp', href: `https://wa.me/?text=${enc(`${a.title} ${pageUrl}`)}`, d: 'M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2s-1 .3-3.4-.7a11.6 11.6 0 0 1-4.5-4c-.3-.5-1.1-1.6-1.1-3s.7-2.1 1-2.4.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.4.5c-.1.1-.3.3-.1.6a8 8 0 0 0 3.9 3.4c.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l2 .9c.3.2.5.2.5.4s0 .9-.1 1z' },
+  { name: 'X', href: `https://x.com/intent/post?text=${enc(a.title)}&url=${enc(pageUrl)}`, d: 'M4 3h4.5l4 5.6L17.5 3H20l-6.3 7.4L21 21h-4.5l-4.4-6.1L6.6 21H4l7-8.1z' },
+  { name: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${enc(pageUrl)}`, d: 'M14 8h3V4h-3a4 4 0 0 0-4 4v2H8v4h2v8h4v-8h3l1-4h-4V8z' },
+  { name: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(pageUrl)}`, d: 'M4.5 3a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM3 8.5h3V21H3zm6 0h2.9v1.7h.1c.4-.8 1.4-1.9 3.1-1.9 3.3 0 3.9 2.2 3.9 5V21h-3v-6.8c0-1.6 0-3.7-2.3-3.7S12 12.3 12 14v7H9z' },
+];
+const rel = related(a, 4);
+---
+<Base title={a.title} description={a.excerpt} image={hero} type="article" jsonLd={ld} publishedTime={a.date}>
+  <div class="progress" aria-hidden="true"><span data-progress></span></div>
+  <div class="wrap">
+    <Breadcrumbs items={[{ name: cat.name, href: `/${cat.slug}` }, { name: a.title }]} />
+  </div>
+  <article class="article">
+    <header class="wrap narrow ahead">
+      <a class="chip" href={url(`/${cat.slug}`)}>{cat.name}</a>
+      <h1>{a.title}</h1>
+      <p class="dek">{a.excerpt}</p>
+      <div class="byline">
+        <a class="author" href={url(`/author/${author.slug}`)}>
+          <span class="av" style={`background:${author.color}`} aria-hidden="true">{initials(author.nameEn)}</span>
+          <span><strong>{author.name}</strong><span class="meta"><time datetime={a.date}>{formatDate(a.date)}</time> · {a.readMins} मिनट में पढ़ें</span></span>
+        </a>
+        <div class="tools">
+          {shares.map((s) => <a class="tool" href={s.href} target="_blank" rel="noopener noreferrer" aria-label={`${s.name} पर शेयर करें`}><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d={s.d} fill="currentColor"/></svg></a>)}
+          <button class="tool" type="button" data-share="copy" data-url={pageUrl} aria-label="लिंक कॉपी करें"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+          <button class="tool bm" type="button" data-bookmark={a.slug} aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="bm-label">सेव करें</span></button>
+        </div>
+      </div>
+    </header>
+    <figure class="wrap mid hero-fig">
+      <Image src={hero} alt={a.imageAlt} widths={[480, 800, 1200, 1600]} sizes="(max-width: 960px) 100vw, 960px" loading="eager" fetchpriority="high" />
+      <figcaption>{a.caption ?? a.imageAlt} <span class="credit">· फ़ोटो: Unsplash</span></figcaption>
+    </figure>
+    <div class="wrap narrow prose" data-article-body set:html={renderBody(a.body)} />
+    <footer class="wrap narrow afoot">
+      <ul class="tags" aria-label="टैग्स">{a.tags.map((t) => <li><a class="chip" href={url(`/search?q=${encodeURIComponent(t)}`)}>#{t}</a></li>)}</ul>
+      <aside class="author-box" aria-label="लेखक के बारे में">
+        <span class="av lg" style={`background:${author.color}`} aria-hidden="true">{initials(author.nameEn)}</span>
+        <div><p class="lbl">लेखक</p><a href={url(`/author/${author.slug}`)}><strong>{author.name}</strong></a> <span class="meta">{author.role}</span><p>{author.bio}</p></div>
+      </aside>
+    </footer>
+  </article>
+  <section class="wrap section" aria-labelledby="rel-h">
+    <h2 id="rel-h" class="rel-h">ये भी पढ़ें</h2>
+    <div class="grid grid-4">{rel.map((r) => <ArticleCard article={r} />)}</div>
+  </section>
+</Base>
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-progress]');
+  const body = document.querySelector<HTMLElement>('[data-article-body]');
+  if (bar && body) {
+    let ticking = false;
+    const update = () => { const r = body.getBoundingClientRect(); const p = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight * 0.6))); bar.style.transform = `scaleX(${p})`; ticking = false; };
+    addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  }
+</script>
+<style>
+  .progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 60; }
+  .progress span { display: block; height: 100%; background: linear-gradient(90deg, #e8335a, #ff9f1c); transform-origin: left; transform: scaleX(0); }
+  .narrow { max-width: 760px; } .mid { max-width: 960px; }
+  .ahead { padding-top: 24px; display: grid; gap: 14px; justify-items: start; }
+  h1 { font-size: clamp(1.7rem, 4.2vw, 2.7rem); margin: 0; line-height: 1.35; }
+  .dek { font-size: 1.15rem; color: var(--text-2); margin: 0; }
+  .byline { width: 100%; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; padding: 14px 0; border-block: 1px solid var(--border); }
+  .author { display: flex; align-items: center; gap: 12px; } .author strong { display: block; }
+  .author:hover strong { color: var(--brand-2); }
+  .av { width: 44px; height: 44px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-weight: 700; flex-shrink: 0; }
+  .av.lg { width: 64px; height: 64px; font-size: 1.3rem; }
+  .tools { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tool { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 40px; height: 40px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-elev); font-size: .85rem; font-weight: 600; }
+  .tool:hover { background: var(--bg-soft); }
+  .bm[aria-pressed='true'] { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .bm[aria-pressed='true'] path { fill: currentColor; }
+  :global([data-theme='dark']) .bm[aria-pressed='true'] { color: #120a3d; }
+  .hero-fig { margin-block: 24px; }
+  .hero-fig :global(img) { width: 100%; border-radius: var(--radius); aspect-ratio: 16 / 9; object-fit: cover; }
+  figcaption { font-size: .85rem; color: var(--muted); margin-top: 8px; text-align: center; font-style: italic; }
+  .afoot { margin-top: 32px; display: grid; gap: 24px; }
+  .tags { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .author-box { display: flex; gap: 16px; padding: 20px; background: var(--bg-soft); border-radius: var(--radius); }
+  .author-box p { margin: 6px 0 0; color: var(--text-2); }
+  .author-box .lbl { margin: 0; font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .rel-h { font-size: 1.6rem; margin-bottom: 20px; }
+</style>

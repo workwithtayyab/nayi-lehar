@@ -1,0 +1,14 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import StoryCard from '../../components/StoryCard.astro';
+import { STORIES } from '../../data/media';
+---
+<Base title="वेब स्टोरी" description="छोटी, विज़ुअल और स्वाइप करने लायक कहानियां — 1 मिनट में पूरी जानकारी।">
+  <div class="wrap">
+    <Breadcrumbs items={[{ name: 'वेब स्टोरी' }]} />
+    <header class="page-head"><h1>वेब स्टोरी</h1><p>छोटी, विज़ुअल और स्वाइप करने लायक कहानियां — 1 मिनट में पूरी जानकारी।</p></header>
+    <div class="ws-grid">{STORIES.map((s) => <StoryCard story={s} />)}</div>
+  </div>
+</Base>
+<style>.ws-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(min(45%, 200px), 1fr)); }</style>

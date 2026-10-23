@@ -1,0 +1,12 @@
+---
+import ListingPage from '../../components/ListingPage.astro';
+import { CATEGORIES, type Category } from '../../config/site';
+import { byCategory } from '../../data/articles';
+import { pages } from '../../lib/paginate';
+export function getStaticPaths() {
+  return CATEGORIES.map((c) => ({ params: { category: c.slug }, props: { cat: c } }));
+}
+const { cat } = Astro.props as { cat: Category };
+const [p] = pages(byCategory(cat.slug));
+---
+<ListingPage title={cat.name} description={cat.description} items={p.items} current={1} last={p.last} base={`/${cat.slug}`} crumbs={[{ name: cat.name }]} />

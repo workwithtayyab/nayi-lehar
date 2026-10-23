@@ -1,0 +1,10 @@
+---
+import StaticPage from '../components/StaticPage.astro';
+import { SITE } from '../config/site';
+---
+<StaticPage title="विज्ञापन दें" description="Gen-Z ऑडियंस तक पहुंचने के लिए नई लहर के साथ पार्टनर बनें।">
+  <h2>हम क्या ऑफर करते हैं</h2>
+  <ul><li>ब्रांडेड स्टोरीज़ और एक्सप्लेनर्स (साफ़ "पार्टनर कंटेंट" लेबल के साथ)</li><li>वेब स्टोरी और वीडियो कैंपेन</li><li>न्यूज़लेटर स्पॉन्सरशिप</li></ul>
+  <p>हम सिर्फ़ ऐसे विज्ञापन लेते हैं जो पेज की स्पीड और पढ़ने के अनुभव को खराब न करें।</p>
+  <p>संपर्क: <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+</StaticPage>

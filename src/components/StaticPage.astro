@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+interface Props { title: string; description: string }
+const { title, description } = Astro.props;
+---
+<Base title={title} description={description}>
+  <div class="wrap sp">
+    <Breadcrumbs items={[{ name: title }]} />
+    <header class="page-head"><h1>{title}</h1><p>{description}</p></header>
+    <div class="prose"><slot /></div>
+  </div>
+</Base>
+<style>.sp { max-width: 820px; }</style>

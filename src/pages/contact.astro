@@ -1,0 +1,35 @@
+---
+import StaticPage from '../components/StaticPage.astro';
+import { SITE } from '../config/site';
+---
+<StaticPage title="संपर्क करें" description="कोई स्टोरी आइडिया, सुधार या फीडबैक? हमें बताएं।">
+  <p>ईमेल: <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+  <form class="cf" data-contact novalidate>
+    <div class="form-field"><label for="c-name">नाम</label><input id="c-name" name="name" class="input" required autocomplete="name" aria-describedby="e-name" /><span class="field-error" id="e-name"></span></div>
+    <div class="form-field"><label for="c-email">ईमेल</label><input id="c-email" name="email" type="email" class="input" required autocomplete="email" aria-describedby="e-email" /><span class="field-error" id="e-email"></span></div>
+    <div class="form-field"><label for="c-topic">विषय</label><select id="c-topic" name="topic" class="input"><option>स्टोरी आइडिया</option><option>सुधार / करेक्शन</option><option>विज्ञापन</option><option>अन्य</option></select></div>
+    <div class="form-field"><label for="c-msg">संदेश</label><textarea id="c-msg" name="message" class="input" required minlength="10" aria-describedby="e-msg"></textarea><span class="field-error" id="e-msg"></span></div>
+    <button class="btn btn-primary" type="submit">भेजें</button>
+    <p class="notice" data-ok role="status" hidden>धन्यवाद! आपका संदेश मिल गया है (डेमो — कोई डेटा भेजा नहीं गया)।</p>
+  </form>
+</StaticPage>
+<script>
+  const f = document.querySelector<HTMLFormElement>('[data-contact]')!;
+  const msgs: Record<string, string> = { name: 'कृपया अपना नाम लिखें।', email: 'कृपया सही ईमेल पता डालें।', message: 'संदेश कम से कम 10 अक्षर का होना चाहिए।' };
+  f.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let first: HTMLElement | null = null;
+    for (const name of Object.keys(msgs)) {
+      const el = f.elements.namedItem(name) as HTMLInputElement;
+      const err = document.getElementById(`e-${name}`)!;
+      const bad = !el.value.trim() || !el.validity.valid;
+      err.textContent = bad ? msgs[name] : '';
+      el.toggleAttribute('aria-invalid', bad);
+      if (bad && !first) first = el;
+    }
+    if (first) { first.focus(); return; }
+    f.reset();
+    f.querySelector<HTMLElement>('[data-ok]')!.hidden = false;
+  });
+</script>
+<style>.cf { margin-top: 24px; } .cf .notice { margin-top: 16px; }</style>

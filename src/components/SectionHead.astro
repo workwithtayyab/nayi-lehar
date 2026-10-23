@@ -1,0 +1,18 @@
+---
+import { url } from '../lib/utils';
+interface Props { title: string; href?: string; id: string; light?: boolean }
+const { title, href, id, light = false } = Astro.props;
+---
+<div class:list={['sh', { light }]}>
+  <h2 id={id}>{title}</h2>
+  {href && <a href={url(href)} class="more">और देखें <span class="sr-only">— {title}</span><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>}
+</div>
+<style>
+  .sh { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); margin: 0; }
+  .more { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; font-size: .92rem; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); white-space: nowrap; }
+  .more:hover { background: var(--bg-soft); }
+  .light h2, .light .more { color: #fff; }
+  .light .more { border-color: rgb(255 255 255 / .4); }
+  .light .more:hover { background: rgb(255 255 255 / .12); }
+</style>

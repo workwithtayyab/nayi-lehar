@@ -1,0 +1,7 @@
+---
+import ListingPage from '../../components/ListingPage.astro';
+import { ARTICLES } from '../../data/articles';
+import { pages } from '../../lib/paginate';
+const [p] = pages(ARTICLES);
+---
+<ListingPage title="ताज़ा खबरें" description="सभी कैटेगरी की सबसे नई कहानियां, एक जगह।" items={p.items} current={1} last={p.last} base="/latest" crumbs={[{ name: 'ताज़ा खबरें' }]} />

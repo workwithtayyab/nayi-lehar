@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import { ARTICLES } from '../data/articles';
+import { url } from '../lib/utils';
+---
+<Base title="पेज नहीं मिला" description="यह पेज मौजूद नहीं है।" noindex>
+  <div class="wrap nf">
+    <p class="code" aria-hidden="true">404</p>
+    <h1>ओह! यह पेज लहरों में खो गया।</h1>
+    <p>हो सकता है लिंक पुराना हो या पता गलत टाइप हुआ हो।</p>
+    <form action={url('/search')} role="search" class="sf"><label class="sr-only" for="nf-q">सर्च करें</label><input id="nf-q" name="q" type="search" class="input" placeholder="कुछ और सर्च करें…" /><button class="btn btn-primary">सर्च</button></form>
+    <a class="btn btn-ghost" href={url('/')}>होम पेज पर जाएं</a>
+  </div>
+  <section class="wrap section" aria-labelledby="nf-h"><h2 id="nf-h">शायद आप ये पढ़ना चाहें</h2><div class="grid grid-4">{ARTICLES.slice(0, 4).map((a) => <ArticleCard article={a} />)}</div></section>
+</Base>
+<style>
+  .nf { text-align: center; padding: 48px 0 16px; display: grid; justify-items: center; gap: 12px; }
+  .code { font-size: clamp(5rem, 18vw, 9rem); font-weight: 700; line-height: 1; margin: 0; background: linear-gradient(90deg, #e8335a, #ff9f1c, #5b3bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sf { display: flex; gap: 8px; width: min(100%, 480px); }
+</style>

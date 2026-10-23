@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import '../styles/results.css';
+import { url } from '../lib/utils';
+---
+<Base title="सेव किए गए लेख" description="आपके सेव किए गए लेख — इस डिवाइस पर सुरक्षित।" noindex>
+  <div class="wrap narrow">
+    <Breadcrumbs items={[{ name: 'सेव किए गए लेख' }]} />
+    <header class="page-head"><h1>सेव किए गए लेख</h1><p>लेख पर "सेव करें" दबाएं और बाद में यहां पढ़ें। ये लिस्ट सिर्फ़ इसी ब्राउज़र में रहती है — कोई लॉगिन नहीं चाहिए।</p></header>
+    <ul class="results" data-results></ul>
+    <div class="empty" data-empty hidden><p>अभी कोई लेख सेव नहीं किया गया है।</p><a class="btn btn-primary" href={url('/latest')}>ताज़ा खबरें पढ़ें</a></div>
+  </div>
+</Base>
+<script>
+  import { loadIndex, renderResults } from '../scripts/results';
+  import { getBookmarks } from '../scripts/site';
+  const out = document.querySelector<HTMLElement>('[data-results]')!;
+  const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+  const index = await loadIndex();
+  const render = () => { const ids = getBookmarks(); const items = ids.map((id) => index.find((a) => a.slug === id)).filter((a): a is NonNullable<typeof a> => !!a); out.innerHTML = renderResults(items, true); empty.hidden = items.length > 0; };
+  render();
+  document.addEventListener('bookmarks:change', render);
+</script>
+<style>.narrow { max-width: 860px; }</style>

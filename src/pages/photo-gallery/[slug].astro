@@ -1,0 +1,73 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { Image, getImage } from 'astro:assets';
+import { GALLERIES } from '../../data/media';
+import type { Gallery } from '../../data/types';
+import { getAuthor } from '../../data/authors';
+import { img } from '../../lib/images';
+import { formatDate, url } from '../../lib/utils';
+export function getStaticPaths() { return GALLERIES.map((g) => ({ params: { slug: g.slug }, props: { g } })); }
+const { g } = Astro.props as { g: Gallery };
+const author = getAuthor(g.author);
+const large = await Promise.all(g.photos.map((p) => getImage({ src: img(p.image), width: 1600, format: 'webp' })));
+const others = GALLERIES.filter((x) => x.slug !== g.slug);
+---
+<Base title={g.title} description={g.excerpt} image={img(g.photos[0].image)} type="article" publishedTime={g.date}>
+  <div class="wrap">
+    <Breadcrumbs items={[{ name: 'फोटो गैलरी', href: '/photo-gallery' }, { name: g.title }]} />
+    <header class="page-head"><h1>{g.title}</h1><p>{g.excerpt}</p><p class="meta">By <strong><a href={url(`/author/${author.slug}`)}>{author.name}</a></strong> · <time datetime={g.date}>{formatDate(g.date)}</time> · {g.photos.length} तस्वीरें</p></header>
+    <ol class="photos">
+      {g.photos.map((p, i) => (
+        <li>
+          <figure>
+            <button type="button" class="open" data-lb={i} aria-label={`तस्वीर ${i + 1} बड़ी करके देखें`}>
+              <Image src={img(p.image)} alt={p.alt} widths={[480, 800, 1200]} sizes="(max-width: 900px) 100vw, 900px" loading={i === 0 ? 'eager' : 'lazy'} />
+            </button>
+            <figcaption><span class="n">{i + 1}/{g.photos.length}</span> {p.caption}</figcaption>
+          </figure>
+        </li>
+      ))}
+    </ol>
+    <section class="section" aria-labelledby="more-h">
+      <h2 id="more-h">और गैलरी देखें</h2>
+      <ul class="more">{others.map((o) => <li><a href={url(`/photo-gallery/${o.slug}`)}>{o.title}</a></li>)}</ul>
+    </section>
+  </div>
+  <dialog class="lb" data-lightbox aria-label="तस्वीर व्यूअर">
+    <button type="button" class="x" data-lb-close aria-label="बंद करें">✕</button>
+    <button type="button" class="arr l" data-lb-prev aria-label="पिछली तस्वीर">‹</button>
+    <figure><img data-lb-img alt="" /><figcaption data-lb-cap></figcaption></figure>
+    <button type="button" class="arr r" data-lb-next aria-label="अगली तस्वीर">›</button>
+  </dialog>
+  <script type="application/json" id="lb-data" set:html={JSON.stringify(g.photos.map((p, i) => ({ src: large[i].src, alt: p.alt, cap: p.caption })))} />
+</Base>
+<script>
+  const dlg = document.querySelector<HTMLDialogElement>('[data-lightbox]')!;
+  const data: { src: string; alt: string; cap: string }[] = JSON.parse(document.getElementById('lb-data')!.textContent!);
+  const im = dlg.querySelector<HTMLImageElement>('[data-lb-img]')!, cap = dlg.querySelector('[data-lb-cap]')!;
+  let i = 0;
+  const show = (n: number) => { i = (n + data.length) % data.length; im.src = data[i].src; im.alt = data[i].alt; cap.textContent = `${i + 1}/${data.length} — ${data[i].cap}`; };
+  document.querySelectorAll<HTMLButtonElement>('[data-lb]').forEach((b) => b.addEventListener('click', () => { show(+b.dataset.lb!); dlg.showModal(); }));
+  dlg.querySelector('[data-lb-close]')!.addEventListener('click', () => dlg.close());
+  dlg.querySelector('[data-lb-prev]')!.addEventListener('click', () => show(i - 1));
+  dlg.querySelector('[data-lb-next]')!.addEventListener('click', () => show(i + 1));
+  dlg.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') show(i - 1); if (e.key === 'ArrowRight') show(i + 1); });
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+</script>
+<style>
+  .photos { list-style: none; padding: 0; margin: 0 auto; max-width: 900px; display: grid; gap: 32px; }
+  figure { margin: 0; }
+  .open { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: var(--radius); overflow: hidden; }
+  .open :global(img) { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+  figcaption { margin-top: 10px; color: var(--text-2); }
+  .n { font-weight: 700; color: var(--brand-2); margin-right: 6px; }
+  .more { display: grid; gap: 8px; padding-left: 1.2em; } .more a { color: var(--link); text-decoration: underline; }
+  .lb { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; border: 0; padding: 0; background: rgb(0 0 0 / .94); color: #fff; }
+  .lb[open] { display: grid; place-items: center; }
+  .lb figure { max-width: min(92vw, 1400px); text-align: center; }
+  .lb img { max-height: 82dvh; width: auto; margin: 0 auto; border-radius: 8px; }
+  .lb figcaption { color: #ddd; }
+  .x, .arr { position: fixed; border: 0; background: rgb(255 255 255 / .15); color: #fff; width: 48px; height: 48px; border-radius: 50%; font-size: 1.6rem; display: grid; place-items: center; }
+  .x { top: 16px; right: 16px; font-size: 1.1rem; } .arr { top: 50%; transform: translateY(-50%); } .l { left: 12px; } .r { right: 12px; }
+</style>

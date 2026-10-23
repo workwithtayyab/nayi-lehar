@@ -1,0 +1,56 @@
+---
+import { Image } from 'astro:assets';
+import type { Article } from '../data/types';
+import { getCategory } from '../config/site';
+import { getAuthor } from '../data/authors';
+import { formatShortDate, url } from '../lib/utils';
+import { img } from '../lib/images';
+
+interface Props { article: Article; variant?: 'grid' | 'list' | 'overlay' | 'compact'; eager?: boolean; headingLevel?: 'h2' | 'h3'; showExcerpt?: boolean }
+const { article: a, variant = 'grid', eager = false, headingLevel = 'h3', showExcerpt = false } = Astro.props;
+const cat = getCategory(a.category)!;
+const author = getAuthor(a.author);
+const H = headingLevel;
+const widths = variant === 'overlay' ? [480, 800, 1200] : variant === 'compact' ? [160, 320] : [320, 480, 720];
+const sizes = variant === 'overlay' ? '(max-width: 760px) 100vw, 60vw' : variant === 'compact' ? '120px' : variant === 'list' ? '(max-width: 600px) 40vw, 280px' : '(max-width: 600px) 100vw, (max-width: 1100px) 45vw, 300px';
+---
+<article class={`card card-${variant}`}>
+  <a class="thumb" href={url(a.href)} tabindex="-1" aria-hidden="true">
+    <Image src={img(a.image)} alt="" widths={widths} sizes={sizes} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : 'auto'} />
+  </a>
+  <div class="body">
+    {variant !== 'compact' && <a class="chip" href={url(`/${cat.slug}`)}>{cat.name}</a>}
+    <H class={`title ${variant === 'compact' ? 'clamp-2' : 'clamp-3'}`}><a href={url(a.href)}>{a.title}</a></H>
+    {showExcerpt && <p class="excerpt clamp-2">{a.excerpt}</p>}
+    <p class="meta">
+      {variant !== 'compact' && <span>By <strong>{author.name}</strong></span>}
+      <time datetime={a.date}>{formatShortDate(a.date)}</time>
+      {variant !== 'compact' && <span aria-label={`${a.readMins} मिनट में पढ़ें`}>· {a.readMins} मिनट</span>}
+    </p>
+  </div>
+</article>
+<style>
+  .card { position: relative; display: grid; gap: 12px; align-content: start; }
+  .thumb { display: block; overflow: hidden; border-radius: var(--radius-sm); background: var(--bg-soft); aspect-ratio: 16 / 10; }
+  .thumb :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+  .card:hover .thumb :global(img) { transform: scale(1.04); }
+  .body { display: grid; gap: 8px; justify-items: start; }
+  .title { font-size: 1.05rem; font-weight: 600; margin: 0; }
+  .title a:hover { color: var(--brand-2); }
+  .title a::after { content: ''; position: absolute; inset: 0; }
+  .chip { position: relative; z-index: 1; }
+  .excerpt { color: var(--text-2); margin: 0; font-size: .95rem; }
+  .meta { margin: 0; }
+  .card-list { grid-template-columns: minmax(120px, 42%) 1fr; gap: 16px; }
+  .card-list .title { font-size: 1rem; }
+  .card-compact { grid-template-columns: 96px 1fr; gap: 12px; align-items: center; }
+  .card-compact .thumb { aspect-ratio: 1; }
+  .card-compact .title { font-size: .92rem; }
+  .card-overlay { border-radius: var(--radius); overflow: hidden; }
+  .card-overlay .thumb { aspect-ratio: 16 / 10; border-radius: 0; }
+  .card-overlay .body { position: absolute; inset: auto 0 0 0; padding: clamp(16px, 3vw, 28px); background: linear-gradient(transparent, rgb(0 0 0 / .85)); color: #fff; }
+  .card-overlay .title { font-size: clamp(1.15rem, 2.4vw, 1.7rem); font-weight: 700; }
+  .card-overlay .title a:hover { color: #fff; text-decoration: underline; }
+  .card-overlay .meta, .card-overlay .meta strong { color: rgb(255 255 255 / .85); }
+  .card-overlay .chip { background: var(--brand-2); color: #fff; }
+</style>

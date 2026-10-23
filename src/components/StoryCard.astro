@@ -1,0 +1,23 @@
+---
+import { Image } from 'astro:assets';
+import type { WebStory } from '../data/types';
+import { url } from '../lib/utils';
+import { img } from '../lib/images';
+interface Props { story: WebStory }
+const { story: s } = Astro.props;
+---
+<article class="story">
+  <a href={url(`/web-story/${s.slug}`)}>
+    <Image src={img(s.cover)} alt="" widths={[240, 360, 480]} sizes="(max-width: 600px) 45vw, 220px" loading="lazy" />
+    <span class="badge" aria-hidden="true">{s.slides.length} स्लाइड्स</span>
+    <h3 class="clamp-3">{s.title}</h3>
+  </a>
+</article>
+<style>
+  .story a { position: relative; display: block; aspect-ratio: 9 / 16; border-radius: var(--radius); overflow: hidden; background: #222; color: #fff; }
+  .story :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+  .story a:hover :global(img) { transform: scale(1.05); }
+  .story a::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 45%, rgb(0 0 0 / .85)); }
+  h3 { position: absolute; z-index: 1; inset: auto 12px 14px; font-size: .98rem; margin: 0; }
+  .badge { position: absolute; z-index: 1; top: 10px; left: 10px; background: rgb(0 0 0 / .55); font-size: .72rem; padding: 2px 8px; border-radius: 999px; }
+</style>

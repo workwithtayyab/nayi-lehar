@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import ArticleCard from './ArticleCard.astro';
+import Pagination from './Pagination.astro';
+import type { Article } from '../data/types';
+interface Props { title: string; description: string; items: Article[]; current: number; last: number; base: string; crumbs: { name: string; href?: string }[] }
+const { title, description, items, current, last, base, crumbs } = Astro.props;
+const pageTitle = current > 1 ? `${title} — पेज ${current}` : title;
+---
+<Base title={pageTitle} description={description}>
+  <div class="wrap">
+    <Breadcrumbs items={crumbs} />
+    <header class="page-head">
+      <h1>{title}</h1>
+      <p>{description}</p>
+    </header>
+    {items.length ? (
+      <div class="grid grid-4">{items.map((a, i) => <ArticleCard article={a} headingLevel="h2" eager={i < 2 && current === 1} showExcerpt />)}</div>
+    ) : (
+      <p class="empty">इस सेक्शन में अभी कोई लेख नहीं है।</p>
+    )}
+    <Pagination current={current} last={last} base={base} />
+  </div>
+</Base>

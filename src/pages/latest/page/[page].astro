@@ -1,0 +1,11 @@
+---
+import ListingPage from '../../../components/ListingPage.astro';
+import { ARTICLES } from '../../../data/articles';
+import { pages } from '../../../lib/paginate';
+import type { Article } from '../../../data/types';
+export function getStaticPaths() {
+  return pages(ARTICLES).filter((p) => p.n > 1).map((p) => ({ params: { page: String(p.n) }, props: { p } }));
+}
+const { p } = Astro.props as { p: { n: number; last: number; items: Article[] } };
+---
+<ListingPage title="ताज़ा खबरें" description="सभी कैटेगरी की सबसे नई कहानियां, एक जगह।" items={p.items} current={p.n} last={p.last} base="/latest" crumbs={[{ name: 'ताज़ा खबरें', href: '/latest' }, { name: `पेज ${p.n}` }]} />

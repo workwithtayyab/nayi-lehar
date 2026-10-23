@@ -1,0 +1,51 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import '../styles/results.css';
+import { CATEGORIES } from '../config/site';
+import { url } from '../lib/utils';
+---
+<Base title="सर्च" description="नई लहर पर खबरें, लेख और टॉपिक्स सर्च करें।" noindex>
+  <div class="wrap narrow">
+    <Breadcrumbs items={[{ name: 'सर्च' }]} />
+    <header class="page-head"><h1>सर्च करें</h1></header>
+    <form class="sf" role="search" data-search-form>
+      <label for="q" class="sr-only">खोजें</label>
+      <input id="q" name="q" type="search" class="input" placeholder="जैसे: AI, मेट्रो, करियर…" autocomplete="off" />
+      <button class="btn btn-primary" type="submit">सर्च</button>
+    </form>
+    <div class="pop"><span>पॉपुलर:</span>{CATEGORIES.slice(0, 6).map((c) => <a class="chip" href={url(`/${c.slug}`)}>{c.name}</a>)}</div>
+    <p class="status" role="status" aria-live="polite" data-status></p>
+    <ul class="results" data-results></ul>
+  </div>
+</Base>
+<script>
+  import { loadIndex, renderResults, type IndexItem } from '../scripts/results';
+  const form = document.querySelector<HTMLFormElement>('[data-search-form]')!;
+  const input = form.querySelector<HTMLInputElement>('input')!;
+  const out = document.querySelector<HTMLElement>('[data-results]')!;
+  const status = document.querySelector<HTMLElement>('[data-status]')!;
+  let index: IndexItem[] | null = null;
+  const norm = (s: string) => s.toLowerCase().normalize('NFC');
+  async function run(q: string) {
+    q = q.trim();
+    const u = new URL(location.href); if (q) u.searchParams.set('q', q); else u.searchParams.delete('q'); history.replaceState(null, '', u);
+    if (!q) { out.innerHTML = ''; status.textContent = ''; return; }
+    index ??= await loadIndex();
+    const terms = norm(q).split(/\s+/);
+    const hits = index.map((a) => { const hay = norm([a.title, a.excerpt, a.category, a.author, a.tags.join(' ')].join(' ')); const t = norm(a.title); let score = 0; for (const w of terms) { if (!hay.includes(w)) return { a, score: 0 }; score += t.includes(w) ? 3 : 1; } return { a, score }; }).filter((h) => h.score).sort((x, y) => y.score - x.score).map((h) => h.a);
+    out.innerHTML = renderResults(hits);
+    status.textContent = hits.length ? `"${q}" के लिए ${hits.length} नतीजे मिले` : `"${q}" के लिए कोई नतीजा नहीं मिला। कोई और शब्द आज़माएं।`;
+  }
+  let t: number | undefined;
+  input.addEventListener('input', () => { clearTimeout(t); t = window.setTimeout(() => run(input.value), 200); });
+  form.addEventListener('submit', (e) => { e.preventDefault(); run(input.value); });
+  const q0 = new URLSearchParams(location.search).get('q');
+  if (q0) { input.value = q0; run(q0); } else input.focus();
+</script>
+<style>
+  .narrow { max-width: 860px; }
+  .sf { display: flex; gap: 10px; } .sf .input { font-size: 1.05rem; min-height: 52px; } .sf .btn { min-height: 52px; }
+  .pop { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 14px 0 24px; color: var(--muted); font-size: .9rem; }
+  .status { font-weight: 600; }
+</style>
