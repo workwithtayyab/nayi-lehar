@@ -19,7 +19,7 @@ export const formatShortDate = (iso: string) => shortFmt.format(new Date(iso));
 
 export function readingTime(text: string): number {
   const words = text.trim().split(/\s+/).length;
-  return Math.max(1, Math.round(words / 200));
+  return Math.max(1, Math.ceil(words / 180));
 }
 
 export function escapeHtml(s: string): string {

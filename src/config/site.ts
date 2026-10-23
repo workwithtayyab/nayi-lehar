@@ -36,7 +36,7 @@ export const CATEGORIES: Category[] = [
   { slug: 'career', name: 'करियर', nameEn: 'Career', color: '#37474f', description: 'नौकरी, इंटर्नशिप, स्किल्स और पैसों की समझ — पहली सैलरी से पहले और बाद।' },
   { slug: 'explainer', name: 'एक्सप्लेनर', nameEn: 'Explainer', color: '#4527a0', description: 'मुश्किल मुद्दे, आसान जवाब। हर बड़ी खबर के पीछे का "क्यों" और "कैसे"।' },
   { slug: 'utility', name: 'यूटिलिटी', nameEn: 'Utility', color: '#00838f', description: 'काम की बातें — सरकारी सेवाएं, पैसा, डॉक्यूमेंट्स और रोज़ के हैक्स।' },
-  { slug: 'special', name: 'लहर स्पेशल', nameEn: 'Lehar Special', color: '#d84315', description: 'हमारी खास रिपोर्ट्स, इंटरव्यू और लंबी कहानियां।' },
+  { slug: 'special', name: 'लहर स्पेशल', nameEn: 'Lehar Special', color: '#bf360c', description: 'हमारी खास रिपोर्ट्स, इंटरव्यू और लंबी कहानियां।' },
 ];
 
 export const SECTION_LINKS = [

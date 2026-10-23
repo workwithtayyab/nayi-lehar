@@ -13,5 +13,5 @@ export default defineConfig({
   integrations: [sitemap({ filter: (page) => !page.includes('/404') })],
   prefetch: { prefetchAll: false, defaultStrategy: 'hover' },
   image: { responsiveStyles: false },
-  build: { inlineStylesheets: 'auto' },
+  build: { inlineStylesheets: 'always' },
 });

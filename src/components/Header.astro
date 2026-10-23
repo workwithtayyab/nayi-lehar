@@ -10,7 +10,7 @@ const isActive = (slug: string) => path.startsWith(url(`/${slug}`));
     <button class="icon-btn menu-btn" type="button" aria-label="मेन्यू खोलें" aria-controls="drawer" aria-expanded="false" data-menu-open>
       <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M3 12h12M3 17h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
-    <a href={url('/')} class="brand" aria-label="नई लहर — होम"><Logo /></a>
+    <a href={url('/')} class="brand"><Logo /></a>
     <nav class="main-nav" aria-label="मुख्य">
       <ul>
         <li><a href={url('/news')} aria-current={isActive('news') ? 'page' : undefined}>खबरें</a></li>
@@ -100,5 +100,5 @@ const isActive = (slug: string) => path.startsWith(url(`/${slug}`));
   .drawer ul { list-style: none; padding: 0; margin: 0; }
   .drawer nav a { display: flex; align-items: center; padding: 12px 8px; border-bottom: 1px solid var(--border); font-weight: 500; }
   @media (max-width: 1020px) { .main-nav, .subscribe { display: none; } .menu-btn { display: inline-grid; } .brand { margin-right: auto; } }
-  @media (max-width: 560px) { .search-link .label, .theme-toggle { display: none; } .bar { gap: 4px; } }
+  @media (max-width: 560px) { .search-link .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } .theme-toggle { display: none; } .bar { gap: 4px; } }
 </style>

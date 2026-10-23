@@ -7,7 +7,7 @@
 
 :root {
   --bg: #ffffff; --bg-soft: #f4f4f6; --bg-elev: #ffffff; --text: #1d1d1f; --text-2: #4a4a4f; --muted: #6b6b70;
-  --border: #e3e3e6; --brand: #1b0f5c; --brand-2: #e8335a; --accent: #8b0000; --link: #1546a0;
+  --border: #e3e3e6; --brand: #1b0f5c; --brand-2: #c81e45; --accent: #8b0000; --link: #1546a0;
   --chip-bg: #ededef; --chip-text: #3c3c40; --shadow: 0 6px 24px rgb(0 0 0 / .08);
   --radius: 12px; --radius-sm: 6px; --wrap: 1240px; --gap: clamp(16px, 2.2vw, 28px);
   --font: 'Poppins', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', sans-serif;
