@@ -1,0 +1,1 @@
+import{t as e}from"./site.8WVh9th_.js";import{n as t,t as n}from"./results.CTkmqCTh.js";var r=document.querySelector(`[data-results]`),i=document.querySelector(`[data-empty]`),a=await n(),o=()=>{let n=e().map(e=>a.find(t=>t.slug===e)).filter(e=>!!e);r.innerHTML=t(n,!0),i.hidden=n.length>0};o(),document.addEventListener(`bookmarks:change`,o);
