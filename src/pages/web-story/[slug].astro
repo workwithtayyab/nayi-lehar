@@ -59,6 +59,7 @@ const author = getAuthor(s.author);
 <style>
   .player { min-height: 100dvh; display: grid; place-items: center; background: #0b0b0e; }
   .frame { position: relative; width: min(100vw, calc(100dvh * 9 / 16), 460px); aspect-ratio: 9 / 16; max-height: 100dvh; overflow: hidden; background: #000; color: #fff; }
+  @media (max-width: 499px) { .frame { width: 100vw; height: 100dvh; aspect-ratio: auto; } }
   @media (min-width: 500px) { .frame { border-radius: 16px; height: min(92dvh, 820px); width: auto; } }
   .bars { position: absolute; z-index: 3; top: 10px; left: 10px; right: 10px; display: flex; gap: 4px; }
   .bars span { flex: 1; height: 3px; background: rgb(255 255 255 / .35); border-radius: 2px; overflow: hidden; }

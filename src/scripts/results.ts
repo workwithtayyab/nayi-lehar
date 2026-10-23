@@ -13,7 +13,7 @@ export function renderResults(items: IndexItem[], removable = false): string {
         <span class="chip">${esc(a.category)}</span>
         <h2><a href="${a.href}">${esc(a.title)}</a></h2>
         <p class="clamp-2">${esc(a.excerpt)}</p>
-        <p class="meta">By <strong>${esc(a.author)}</strong> · ${esc(a.date)}</p>
+        <p class="meta"><span>By <strong>${esc(a.author)}</strong></span><span>· ${esc(a.date)}</span></p>
         ${removable ? `<button type="button" class="btn btn-ghost rm" data-bookmark="${a.slug}" aria-pressed="true"><span class="bm-label">सेव किया</span> — हटाएं</button>` : ''}
       </div>
     </li>`).join('');

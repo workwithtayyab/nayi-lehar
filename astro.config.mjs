@@ -8,6 +8,7 @@ const base = process.env.BASE_PATH || '/';
 export default defineConfig({
   site,
   base,
+  outDir: process.env.OUT_DIR || './dist',
   trailingSlash: 'ignore',
   integrations: [sitemap({ filter: (page) => !page.includes('/404') })],
   prefetch: { prefetchAll: false, defaultStrategy: 'hover' },
